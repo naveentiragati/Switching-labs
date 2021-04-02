@@ -1,0 +1,94 @@
+R1(config)#do sh run
+
+hostname R1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+no aaa new-model
+memory-size iomem 5
+ip cef
+!
+!
+no ip dhcp use vrf connected
+ip dhcp excluded-address 10.0.1.1 10.0.1.10
+ip dhcp excluded-address 10.0.2.1 10.0.2.10
+ip dhcp excluded-address 10.0.3.1 10.0.3.10
+!
+ip dhcp pool vlan1
+   network 10.0.1.0 255.255.255.0
+   default-router 10.0.1.1
+!
+ip dhcp pool vlan2
+   network 10.0.2.0 255.255.255.0
+   default-router 10.0.2.1
+!
+ip dhcp pool vlan3
+   network 10.0.3.0 255.255.255.0
+   default-router 10.0.3.1
+!
+!
+!
+multilink bundle-name authenticated
+!
+!
+!
+archive
+ log config
+  hidekeys
+!
+!
+interface FastEthernet0/0
+ no ip address
+ speed auto
+ full-duplex
+!
+interface FastEthernet0/0.1
+ encapsulation dot1Q 1 native
+ ip address 10.0.1.1 255.255.255.0
+ ip nat inside
+ ip virtual-reassembly
+!
+interface FastEthernet0/0.2
+ encapsulation dot1Q 2
+ ip address 10.0.2.1 255.255.255.0
+!
+interface FastEthernet0/0.3
+ encapsulation dot1Q 3
+ ip address 10.0.3.1 255.255.255.0
+!
+interface FastEthernet0/1
+ ip address 192.168.10.1 255.255.255.0
+ ip nat outside
+ ip virtual-reassembly
+ duplex auto
+ speed auto
+!
+ip forward-protocol nd
+ip route 0.0.0.0 0.0.0.0 192.168.10.100
+!
+!
+ip http server
+no ip http secure-server
+ip nat inside source list 10 interface FastEthernet0/1 overload
+!
+access-list 10 permit 10.0.1.0 0.0.0.255
+access-list 10 permit 10.0.2.0 0.0.0.255
+access-list 10 permit 10.0.3.0 0.0.0.255
+no cdp run
+!
+!
+!
+control-plane
+!
+
+!
+line con 0
+line aux 0
+line vty 0 4
+!
+!
+end
+
+R1(config)#
